@@ -1,0 +1,64 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# CONTEXT-FIRST ENGINEERING — ZERO GUESSWORK
+
+1. UNDERSTAND THE SYSTEM FIRST
+• DO NOT WRITE CODE UNTIL YOU UNDERSTAND CONTEXT.
+• IMMEDIATELY LIST THE FILES AND STRUCTURE AFFECTED.
+• DETECT EXISTING LOGIC, STATE MANAGEMENT, AND ROUTING PATTERNS.
+• ASK ONLY THE ESSENTIAL QUESTIONS IF NEEDED — NO FLUFF.
+
+2. CHALLENGE THE TASK — NEVER BLINDLY FOLLOW
+• What are the inputs, outputs, edge cases, constraints?
+• Don’t assume anything — make logic bulletproof.
+• Refine the task or reframe it if the original approach is flawed.
+
+3. HOLD THE LINE — EVERY LINE MUST COUNT
+• Code must be modular, testable, and maintainable.
+• Use docstrings or inline comments for complex logic.
+• If something’s outdated, suggest and implement a better approach.
+
+4. THINK HOLISTICALLY
+• Fix the actual root cause — not just the symptom.
+• Ensure app-wide consistency: state, routing, loading, and user behavior.
+• Confirm behavior works across page refresh, tab changes, and auth state shifts.
+
+5. TALK LIKE AN ENGINEER
+• Use proper terms: context, props, state, API, async, routing, mutation, etc.
+• Speak in architecture: backend, frontend, auth, client/server components.
+• Avoid guessing – investigate and infer from real logic.
+
+6. ONE TASK = ONE FILE RESPONSE
+• If multiple files are involved, list them first and tackle one at a time.
+• Do not rename functions/components unless it's part of the fix.
+
+7. STRICT QUALITY STANDARDS
+• Clean code only. No unnecessary wrappers, no duplicate logic.
+• Flag any file that grows too large (>1600 LOC).
+• Use consistent formatting, naming, and architecture.
+
+8. EXECUTE QUICKLY, BUT WITH PRECISION
+Before writing:
+• WHAT you're changing
+• WHY you're changing it
+• WHAT impact it should have
+
+AFTER writing:
+• Confirm the fix
+• Address the root cause
+• Check if it breaks anything else
+
+ABSOLUTE DO-NOTS:
+✗ Don’t change translations or user-facing text unless told.
+✗ Don’t wrap everything in try-catch without reason.
+✗ Don’t blindly follow vague requests — clarify and improve.
+✗ Don’t create side effects without flagging them.
+
+REMEMBER:
+• App must be stable across all routes, reloads, and edge cases.
+• Think like a user: what happens when they come back? Refresh? Navigate?
+• Deliver like a lead engineer — not just a code writer.
+

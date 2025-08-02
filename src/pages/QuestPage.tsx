@@ -1,109 +1,200 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { GameButton } from "@/components/quest/GameButton";
-import { SoWhatCard } from "@/components/quest/SoWhatCard";
-import { LessonAccordion } from "@/components/quest/LessonAccordion";
-import { AIHighlightCard } from "@/components/quest/AIHighlightCard";
+import { GameButton } from "../components/quest/GameButton";
+import { SoWhatCard } from "../components/quest/SoWhatCard";
+import { LessonAccordion } from "../components/quest/LessonAccordion";
+// import { AIHighlightCard } from "../components/quest/AIHighlightCard"; // Optional, not used by default
 import { Brain, Star, Puzzle, ListTodo } from "lucide-react";
+import { supabase } from "../../Tech pulse/src/lib/supabase";
 
-// Mock data
-const mockLessons = [
-  {
-    title: "What is GPT-4o?",
-    content: "GPT-4o is OpenAI's latest multimodal model...",
-  },
-  {
-    title: "How does it work?",
-    content: "It combines text, audio, and vision...",
-  },
-  {
-    title: "Real-world use cases",
-    content: "Customer support, content creation, etc.",
-  },
-];
-const mockSummary =
-  "Learn how this topic impacts your career and why it's important in today's tech landscape.";
-const mockTieIn =
-  "Mastering this topic can help you automate tasks, improve productivity, and stay ahead in your field.";
-const mockAIHighlights = [
-  {
-    title: "GPT-4o launches multimodal API",
-    summary: "OpenAI's new model can process text, audio, and images.",
-    source: "Reddit",
-  },
-  {
-    title: "Devin AI: The first AI software engineer?",
-    summary: "A new AI agent claims to automate coding tasks.",
-    source: "Product Hunt",
-  },
-];
+export type Topic = {
+  id: string;
+  title: string;
+  subject: string;
+  image_url?: string;
+  slug: string;
+  summary?: string;
+  lessons?: any[];
+  games?: any[];
+  flashcards?: any[];
+  quizzes?: any[];
+};
 
 export default function QuestPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [loading, setLoading] = useState(false); // Set to true if fetching
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [topic, setTopic] = useState<Topic | null>(null);
+
+  useEffect(() => {
+    if (!slug) return;
+    setLoading(true);
+    setError(null);
+    setTopic(null);
+    const fetchTopic = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("topics")
+          .select("*")
+          .eq("slug", slug)
+          .single();
+        console.log("[Supabase] fetchTopic response:", { data, error });
+        if (error || !data) throw error || new Error("Topic not found");
+        setTopic({
+          ...data,
+          lessons: data.lessons || [],
+          games: data.games || [],
+          flashcards: data.flashcards || [],
+          quizzes: data.quizzes || [],
+        });
+      } catch (err: any) {
+        setError(err.message || "Failed to load topic");
+        setTopic(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTopic();
+  }, [slug]);
+
+  if (!slug) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        <h2 className="text-2xl font-bold mb-2">No Topic</h2>
+        <p>Missing topic in URL.</p>
+      </div>
+    );
+  }
+  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (error) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        <h2 className="text-2xl font-bold mb-2">Topic not found</h2>
+        <p>{error}</p>
+      </div>
+    );
+  }
+  if (!topic) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        <h2 className="text-2xl font-bold mb-2">Topic not found</h2>
+        <p>No topic matches this quest.</p>
+      </div>
+    );
+  }
 
   // Handlers for game buttons (mock)
   const handleGame = (type: string) => {
     alert(`Open ${type} game/modal!`);
   };
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
-  if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
-
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-8">
-      {/* Header */}
+      {/* Title and Summary */}
       <header className="mb-4">
-        <h1 className="text-4xl font-bold mb-2">
-          Master the topic: {slug?.replace(/-/g, " ")}
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          Unlock your skills with interactive games and lessons.
-        </p>
+        <h1 className="text-4xl font-bold mb-2">{topic.title}</h1>
+        <p className="text-lg text-muted-foreground">{topic.subject}</p>
+        {topic.image_url && (
+          <img
+            src={topic.image_url}
+            alt={topic.title}
+            className="w-full max-h-64 object-cover rounded-xl mt-4"
+          />
+        )}
+        {topic.summary && (
+          <p className="mt-4 text-gray-600 dark:text-gray-400">
+            {topic.summary}
+          </p>
+        )}
       </header>
 
-      {/* Gamified Buttons */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <GameButton
-          label="Flashcards"
-          icon={Brain}
-          color="bg-purple-100 text-purple-800"
-          onClick={() => handleGame("Flashcards")}
-        />
-        <GameButton
-          label="Quiz"
-          icon={Star}
-          color="bg-yellow-100 text-yellow-800"
-          onClick={() => handleGame("Quiz")}
-        />
-        <GameButton
-          label="Memory Game"
-          icon={Puzzle}
-          color="bg-green-100 text-green-800"
-          onClick={() => handleGame("Memory Game")}
-        />
-        <GameButton
-          label="Fill-in-the-Blank"
-          icon={ListTodo}
-          color="bg-blue-100 text-blue-800"
-          onClick={() => handleGame("Fill-in-the-Blank")}
-        />
-      </div>
+      {/* Your Learning Path (Lessons) */}
+      <section className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Your Learning Path</h2>
+        {topic.lessons && topic.lessons.length > 0 ? (
+          <LessonAccordion lessons={topic.lessons} />
+        ) : (
+          <div className="text-center text-gray-500 py-8 bg-gray-50 rounded-xl">
+            <span className="text-lg font-semibold">No lessons found.</span>
+          </div>
+        )}
+      </section>
 
-      {/* So What? Card */}
-      <SoWhatCard summary={mockSummary} tieIn={mockTieIn} />
+      {/* Test Your Knowledge (Games) */}
+      <section className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Test Your Knowledge</h2>
+        {topic.games && topic.games.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {topic.games.map((game: any, i: number) => (
+              <div key={i} className="border rounded p-4 bg-white shadow">
+                <div className="font-semibold mb-2">{game.title}</div>
+                <div className="text-gray-700">{game.description}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-500 py-8 bg-gray-50 rounded-xl">
+            <span className="text-lg font-semibold">No games found.</span>
+          </div>
+        )}
+      </section>
 
-      {/* Lessons Accordion */}
-      <LessonAccordion lessons={mockLessons} />
+      {/* Flashcards Section */}
+      <section className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Flashcards</h2>
+        {topic.flashcards && topic.flashcards.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {topic.flashcards.map((fc: any, i: number) => (
+              <div key={i} className="border rounded p-4 bg-white shadow">
+                <div className="font-semibold mb-2">Q: {fc.front}</div>
+                <div className="text-gray-700">A: {fc.back}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-500 py-8 bg-gray-50 rounded-xl">
+            <span className="text-lg font-semibold">No flashcards found.</span>
+          </div>
+        )}
+      </section>
 
-      {/* AI Highlights */}
-      <section>
+      {/* Quizzes Section */}
+      <section className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Quizzes</h2>
+        {topic.quizzes && topic.quizzes.length > 0 ? (
+          <div className="space-y-4">
+            {topic.quizzes.map((quiz: any, i: number) => (
+              <div key={i} className="border rounded p-4 bg-white shadow">
+                <div className="font-semibold mb-2">{quiz.question}</div>
+                <ul className="list-disc ml-6 mb-2">
+                  {quiz.options &&
+                    quiz.options.map((opt: string, j: number) => (
+                      <li key={j}>{opt}</li>
+                    ))}
+                </ul>
+                <div className="text-green-700 text-sm">
+                  Answer: {quiz.options && quiz.options[quiz.correctAnswer]}
+                </div>
+                <div className="text-gray-500 text-xs mt-1">
+                  {quiz.explanation}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-500 py-8 bg-gray-50 rounded-xl">
+            <span className="text-lg font-semibold">No quizzes found.</span>
+          </div>
+        )}
+      </section>
+
+      {/* AI Highlights (optional, can be extended per topic) */}
+      {/* <section>
         <h3 className="text-lg font-bold mb-2">📰 What matters today?</h3>
         {mockAIHighlights.map((h, i) => (
           <AIHighlightCard key={i} {...h} />
         ))}
-      </section>
+      </section> */}
     </div>
   );
 }
