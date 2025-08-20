@@ -13,6 +13,7 @@ import {
   Target,
 } from "lucide-react";
 import LearningTopicCards from "../components/learn/LearningTopicCards";
+import AIFundamentalsSection from "../components/learn/AIFundamentalsSection";
 
 // Mock data for learning quests
 const learningQuests = [
@@ -93,7 +94,9 @@ const Learn = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24">
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-12">
+      <div className="w-full max-w-7xl mx-auto px-4 py-8">
+        {/* New AI Fundamentals Section */}
+        <AIFundamentalsSection />
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">

@@ -1,15 +1,7 @@
 import React from "react";
-import { supabase } from "../../../Tech pulse/src/lib/supabase";
-import NewsCard from "../../../Tech pulse/src/components/NewsCard";
-
-const formatDate = (dateStr: string) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
+import { supabase } from "../../lib/supabase";
+import NewsCard from "@/components/NewsCard";
+import { getAllMockNewsIds, getMockNewsItem } from "@/lib/mockNewsService";
 
 // Utility: clean source name
 const getCleanSourceName = (source) => {
@@ -41,22 +33,71 @@ export default async function TechDigestSection() {
 
   let data = [];
   let error = null;
+
   try {
+    // Fetch data from Supabase daily_summaries table
+    console.log("Fetching data from Supabase daily_summaries table");
     const res = await supabase
       .from("daily_summaries")
       .select("*")
-      .order("pubDate", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(50);
+
     data = res.data || [];
     error = res.error;
-    console.log("Fetched daily summaries:", data);
+    console.log("Supabase fetch result:", { data: data.length, error });
+
+    if (error) {
+      console.error("Supabase fetch error:", error);
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      console.log(
+        "No data found in daily_summaries table, using mock data as fallback"
+      );
+      // Fallback to mock data if no data in Supabase
+      const mockIds = getAllMockNewsIds();
+      const mockItems = mockIds
+        .slice(0, 50)
+        .map((id) => {
+          const mockItem = getMockNewsItem(id);
+          if (mockItem) {
+            return {
+              ...mockItem,
+              id: mockItem.id,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      data = mockItems;
+      console.log("Using mock data as fallback:", data.length, "items");
+    } else {
+      // Process Supabase data
+      data = data.map((item) => ({
+        ...item,
+        id:
+          item.id ||
+          `supabase-${item.title?.replace(/\s+/g, "-").toLowerCase()}`,
+        topic: item.topic || item.category || "Tech",
+        source: item.source || "Tech Source",
+        summary: item.summary || item.description || "",
+        takeaways: item.takeaways || [],
+        url: item.url || item.link || "",
+        published_at: item.published_at || item.pubDate || item.created_at,
+      }));
+      console.log("Using Supabase data:", data.length, "items");
+    }
   } catch (err) {
+    console.error("Error fetching data:", err);
     error = err;
     data = [];
   }
 
   if (error) {
-    console.error("Supabase fetch error:", error);
+    console.error("Data fetch error:", error);
     return (
       <div className="text-red-500 text-center">
         Failed to load tech digest.
@@ -76,7 +117,8 @@ export default async function TechDigestSection() {
     favorite_topics.some(
       (topic) =>
         item.title?.toLowerCase().includes(topic.toLowerCase()) ||
-        item.summary?.toLowerCase().includes(topic.toLowerCase())
+        item.summary?.toLowerCase().includes(topic.toLowerCase()) ||
+        item.topic?.toLowerCase().includes(topic.toLowerCase())
     )
   );
 
@@ -100,8 +142,8 @@ export default async function TechDigestSection() {
               source={getCleanSourceName(item.source) || "Tech Source"}
               summary={item.summary}
               takeaways={item.takeaways}
-              url={item.link}
-              publishedAt={item.pubDate}
+              url={item.url}
+              publishedAt={item.published_at}
             />
           ))}
         </div>

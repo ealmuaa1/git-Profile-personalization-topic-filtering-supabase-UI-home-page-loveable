@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import TopNavigation from "@/components/TopNavigation";
 import Home from "./pages/Index";
 import Profile from "./pages/Profile";
@@ -12,26 +14,32 @@ import NotFound from "@/pages/NotFound";
 import QuestPage from "@/pages/QuestPage";
 import Dashboard from "@/pages/Dashboard";
 import Ideas from "@/pages/Ideas";
+import SummaryPage from "@/pages/SummaryPage";
 
 function App() {
   return (
-    <Router>
-      <TopNavigation />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/digests" element={<Digests />} />
-        <Route path="/learn" element={<Learn />} />
-        <Route path="/learn/:slug" element={<TopicPage />} />
-        <Route path="/learn/:slug/flashcards" element={<FlashcardPage />} />
-        <Route path="/learn/:slug/quiz" element={<QuizPage />} />
-        <Route path="/quest/:questId" element={<QuestPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/ideas" element={<Ideas />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <Toaster />
-    </Router>
+    <AuthProvider>
+      <SubscriptionProvider>
+        <Router>
+          <TopNavigation />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/digests" element={<Digests />} />
+            <Route path="/learn" element={<Learn />} />
+            <Route path="/learn/:slug" element={<TopicPage />} />
+            <Route path="/learn/:slug/flashcards" element={<FlashcardPage />} />
+            <Route path="/learn/:slug/quiz" element={<QuizPage />} />
+            <Route path="/quest/:questId" element={<QuestPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/ideas" element={<Ideas />} />
+            <Route path="/summary/:id" element={<SummaryPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+        </Router>
+      </SubscriptionProvider>
+    </AuthProvider>
   );
 }
 

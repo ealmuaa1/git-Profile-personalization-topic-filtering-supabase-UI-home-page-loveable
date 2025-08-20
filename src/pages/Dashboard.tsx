@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../config/firebase";
 import { useAuth } from "../contexts/AuthContext";
 
 interface Trend {
@@ -44,29 +42,15 @@ const mockTrends: Trend[] = [
 const Dashboard = () => {
   const [trends, setTrends] = useState<Trend[]>(mockTrends);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchTrends = async () => {
-      try {
-        const trendsCollection = collection(db, "trends");
-        const trendsSnapshot = await getDocs(trendsCollection);
-        const trendsList = trendsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Trend[];
+    // Simulate loading delay
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
 
-        if (trendsList.length > 0) {
-          setTrends(trendsList);
-        }
-      } catch (error) {
-        console.error("Error fetching trends:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTrends();
+    return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
@@ -104,18 +88,20 @@ const Dashboard = () => {
                 className="w-full h-48 object-cover"
               />
               <div className="p-6">
-                <div className="text-sm text-primary-600 dark:text-primary-400 mb-2">
-                  {trend.category}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                    {trend.category}
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {trend.date}
+                  </span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   {trend.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                <p className="text-gray-600 dark:text-gray-300">
                   {trend.summary}
                 </p>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {new Date(trend.date).toLocaleDateString()}
-                </div>
               </div>
             </motion.div>
           ))}

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../config/firebase";
 import { useAuth } from "../contexts/AuthContext";
 
 interface Flashcard {
@@ -40,29 +38,15 @@ const LearningModule = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchFlashcards = async () => {
-      try {
-        const flashcardsCollection = collection(db, "flashcards");
-        const flashcardsSnapshot = await getDocs(flashcardsCollection);
-        const flashcardsList = flashcardsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Flashcard[];
+    // Simulate loading delay
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
 
-        if (flashcardsList.length > 0) {
-          setFlashcards(flashcardsList);
-        }
-      } catch (error) {
-        console.error("Error fetching flashcards:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFlashcards();
+    return () => clearTimeout(timer);
   }, []);
 
   const handleNext = () => {
